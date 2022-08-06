@@ -404,7 +404,7 @@ RENDERDOC_InjectIntoProcess(uint32_t pid, const rdcarray<EnvironmentModification
                             const rdcstr &capturefile, const CaptureOptions &opts, bool waitForExit)
 {
   rdcpair<RDResult, uint32_t> status =
-      Process::InjectIntoProcess(pid, env, capturefile, opts, waitForExit != 0);
+      Process::InjectIntoProcess(pid, env, capturefile, opts, waitForExit != 0, nullptr);
 
   ExecuteResult ret;
   ret.result = status.first;

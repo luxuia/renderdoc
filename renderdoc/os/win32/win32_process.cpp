@@ -574,14 +574,17 @@ static PROCESS_INFORMATION RunProcess(const rdcstr &app, const rdcstr &workingDi
 rdcpair<RDResult, uint32_t> Process::InjectIntoProcess(uint32_t pid,
                                                        const rdcarray<EnvironmentModification> &env,
                                                        const rdcstr &capturefile,
-                                                       const CaptureOptions &opts, bool waitForExit)
+                                                       const CaptureOptions &opts, bool waitForExit, HANDLE inHProcess)
 {
   rdcwstr wcapturefile = StringFormat::UTF82Wide(capturefile);
 
-  HANDLE hProcess =
-      OpenProcess(PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION |
-                      PROCESS_VM_WRITE | PROCESS_VM_READ | SYNCHRONIZE,
-                  FALSE, pid);
+  HANDLE hProcess = inHProcess;
+  if(hProcess == nullptr)
+  {
+    hProcess = OpenProcess(PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION |
+                    PROCESS_VM_WRITE | PROCESS_VM_READ | SYNCHRONIZE,
+                FALSE, pid);
+  }
 
   if(opts.delayForDebugger > 0)
   {
@@ -1146,7 +1149,7 @@ rdcpair<RDResult, uint32_t> Process::LaunchAndInjectIntoProcess(
     return {result, 0};
   }
 
-  rdcpair<RDResult, uint32_t> ret = InjectIntoProcess(pi.dwProcessId, {}, capturefile, opts, false);
+  rdcpair<RDResult, uint32_t> ret = InjectIntoProcess(pi.dwProcessId, {}, capturefile, opts, false, pi.hProcess);
 
   CloseHandle(pi.hProcess);
   ResumeThread(pi.hThread);
